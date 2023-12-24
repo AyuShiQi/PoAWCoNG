@@ -1,51 +1,37 @@
 <template>
-  <div class="all-charts">
-
+  <div class="echarts-box">
+    <div id="myEcharts" :style="{ width: '900px', height: '300px' }"></div>
   </div>
-  <vi-drawer teleport v-model="open" class="my-drawer">
-    <vi-row class="btn-row" align="center" justify="flex-start" gap="16px">
-      <vi-bubble dark>
-        <vi-button>上传数据</vi-button>
-        <template v-slot:content>
-          <p>请注意，上传的数据必须包含label与feature</p>
-        </template>
-      </vi-bubble>
-    </vi-row>
-    <vi-row class="btn-row" align="center" justify="flex-start" gap="16px">
-      <vi-button color="green">预测数据</vi-button>
-      <vi-select type="button" placeholder="请选择预测数据行">
-        <template v-slot:prefix>
-          第
-        </template>
-        <vi-option v-for="i in tableData.length" :value="i" :key="i">
-          {{ i }}
-        </vi-option>
-        <template v-slot:suffix>
-          行
-        </template>
-      </vi-select>
-    </vi-row>
-    <vi-table-editor class="my-table" v-model="tableData" :defaultCol="8"></vi-table-editor>
-  </vi-drawer>
 </template>
 
 <script setup>
 import * as echarts from "echarts"
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, onUpdated } from 'vue'
 
-const open = ref(true)
-const tableData = reactive([])
+let chart
+
+const props = defineProps({
+  'predict': Array,
+  'std': Array
+})
 
 onMounted(() => {
-  initChart();
-});
+  initChart()
+})
+
+onUpdated(() => {
+    // 更新数据
+    const opt = chart.getOption()
+    opt.series[0].data = props.predict
+    opt.series[1].data = props.std
+})
 
 onUnmounted(() => {
-  echarts.dispose();
-});
+  echarts.dispose()
+})
 
 function initChart() {
-  let chart = echarts.init(document.getElementById("myEcharts"), "dark");
+  chart = echarts.init(document.getElementById("myEcharts"), "dark");
   // 把配置和数据放这里
   chart.setOption({
     xAxis: {},
@@ -115,22 +101,5 @@ function initChart() {
 }
 </script>
 
-<style scoped>
-.all-charts {
-  width: 100%;
-  height: 100%;
-}
-.my-drawer {
-  --vi-drawer-width: 400px;
-
-  .btn-row {
-    height: 45px;
-  }
-
-  .my-table {
-    height: calc(100% - 90px);
-    --vi-table-width: 100%;
-    --vi-table-height: 100%;
-  }
-}
+<style lang="less">
 </style>
